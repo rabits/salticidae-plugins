@@ -2,7 +2,7 @@
 TEMPLATE      = lib
 CONFIG       += plugin
 QT           += multimedia qml
-INCLUDEPATH  += ../..
+INCLUDEPATH  += ../../include
 HEADERS      += raw.h \
                 v4l2.h
 SOURCES      += raw.cpp \
