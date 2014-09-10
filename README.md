@@ -1,14 +1,16 @@
 Eyes plugins
 ============
+This repo contains plugins for the [Salticidae](https://github.com/rabits/salticidae) project
 
-This repo contains eyes plugins for salticidae project
-
-Raw
+Eye
 ---
 
+Eye plugins can provide new video source
+
+### Raw
 Can work with USB V4L2 devices under Linux & Android
 
-### EasyCAP Fushicai USBTV007
+#### EasyCAP Fushicai USBTV007
 To use this hardware on your android smartphone, you need to build usbtv driver and replace your kernel.
 Clone [Kernel N9005](https://github.com/rabits/kernel_n9005) repo and follow instructions in README.
 

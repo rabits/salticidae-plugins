@@ -14,13 +14,13 @@ class Raw
     , public ProtoEye
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID ProtoEye_iid FILE "raw.json")
+    Q_PLUGIN_METADATA(IID ProtoEye_iid FILE "plugin.json")
     Q_INTERFACES(ProtoEye)
 
     Q_PROPERTY( QAbstractVideoSurface* videoSurface READ videoSurface WRITE setVideoSurface )
 
 public:
-    void registerQmlType() { qmlRegisterType<Raw>(ProtoEye_iid, 1, 0, "Raw" ); }
+    void registerQmlType() { qmlRegisterType<Raw>(ProtoEye_iid, 1, 0, PLUGIN_NAME ); }
 
     QList<QByteArray> sources();
 
