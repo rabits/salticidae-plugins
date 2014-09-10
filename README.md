@@ -1,5 +1,5 @@
-Eyes plugins
-============
+Salticidae plugins
+==================
 This repo contains plugins for the [Salticidae](https://github.com/rabits/salticidae) project
 
 Eye
