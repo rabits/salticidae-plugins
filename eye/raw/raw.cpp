@@ -1,4 +1,4 @@
-#include "plugin.h"
+#include "raw.h"
 
 #include <QDebug>
 
@@ -163,9 +163,9 @@ void Raw::ccvt_yuyv(int width, int height, const unsigned char *src, unsigned ch
     } /* ..for line */
 }
 
-QList<QByteArray> Raw::sources()
+QList<QUrl> Raw::sources()
 {
-    QList<QByteArray> sources;
+    QList<QUrl> out;
 
     QDir devDir("/dev");
     devDir.setFilter(QDir::System);
@@ -200,11 +200,12 @@ QList<QByteArray> Raw::sources()
                 name = QString((const char*)vcap.card);
             qDebug() << "found camera: " << name;
 
-            sources.append(entryInfo.filePath().toLocal8Bit());
+            out.append(QUrl(entryInfo.filePath().toLocal8Bit()));
+            out.last().setScheme("raw");
         }
         ::close(fd);
     }
 
-    return sources;
+    return out;
 }
 

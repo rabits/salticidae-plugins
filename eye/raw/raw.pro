@@ -7,5 +7,7 @@ include(../../plugin.pri)
 QT           += multimedia
 
 # Additional headers & sources
-HEADERS      += v4l2.h
-SOURCES      += v4l2.c
+HEADERS      += raw.h \
+                v4l2.h
+SOURCES      += raw.cpp \
+                v4l2.c

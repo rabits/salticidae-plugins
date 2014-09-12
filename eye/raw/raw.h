@@ -22,7 +22,8 @@ class Raw
 public:
     void registerQmlType() { qmlRegisterType<Raw>(ProtoEye_iid, 1, 0, PLUGIN_NAME ); }
 
-    QList<QByteArray> sources();
+    QList<QUrl> sources();
+    QStringList schemes() { return QStringList("raw"); }
 
     Raw(QObject *parent = 0); // Only for QML type
     Raw(const QByteArray& device);
@@ -30,6 +31,10 @@ public:
 
     QAbstractVideoSurface* videoSurface() const;
     void setVideoSurface(QAbstractVideoSurface* surface);
+
+    ProtoEye* instance(QUrl url) {
+        return new Raw(url.path().toLocal8Bit());
+    }
 
 public slots:
     void start();
