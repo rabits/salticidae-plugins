@@ -39,12 +39,12 @@ int v4l2_open_device(v4l2_device_t* device) {
 	
 	//identify device
 	if (-1 == stat(device->name, &st)) {
-		fprintf(stderr, "Cannot identify device: %s\n", device->name);
+        fprintf(stderr, "[Plugin Eye Raw] Cannot identify device: %s\n", device->name);
 		return V4L2_STATUS_ERROR;
 	}
 	
 	if (!S_ISCHR(st.st_mode)) {
-		fprintf(stderr, "Unrecognized device: %s\n", device->name);
+        fprintf(stderr, "[Plugin Eye Raw] Unrecognized device: %s\n", device->name);
 		return V4L2_STATUS_ERROR;
 	}
 	
@@ -52,7 +52,7 @@ int v4l2_open_device(v4l2_device_t* device) {
 	device->fd = open(device->name, O_RDWR | O_NONBLOCK, 0);
 	
 	if (-1 == device->fd) {
-		fprintf(stderr, "Unable to open device: %s\n", device->name);
+        fprintf(stderr, "[Plugin Eye Raw] Unable to open device: %s\n", device->name);
 		return V4L2_STATUS_ERROR;
 	}
 	
@@ -61,21 +61,21 @@ int v4l2_open_device(v4l2_device_t* device) {
 	//query capabilities
 	if (-1 == xioctl(device->fd, VIDIOC_QUERYCAP, &cap)) {
 		if (EINVAL == errno) {
-			fprintf(stderr, "Error: %s is no V4L2 device\n", device->name);
+            fprintf(stderr, "[Plugin Eye Raw] Error: %s is no V4L2 device\n", device->name);
 		} else {
-			fprintf(stderr, "Error querying capabilities on device: %s\n", device->name);
+            fprintf(stderr, "[Plugin Eye Raw] Error querying capabilities on device: %s\n", device->name);
 		}
 		
 		return V4L2_STATUS_ERROR;
 	}
 	
 	if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-		fprintf(stderr, "Error: %s is no video capture device\n", device->name);
+        fprintf(stderr, "[Plugin Eye Raw] Error: %s is no video capture device\n", device->name);
 		return V4L2_STATUS_ERROR;
 	}
 	
 	if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
-		fprintf(stderr, "Error: %s does not support streaming\n", device->name);
+        fprintf(stderr, "[Plugin Eye Raw] Error: %s does not support streaming\n", device->name);
 		return V4L2_STATUS_ERROR;
 	}
 	
@@ -90,16 +90,16 @@ int v4l2_open_device(v4l2_device_t* device) {
 	
 	if (-1 == xioctl(device->fd, VIDIOC_REQBUFS, &req)) {
 		if (EINVAL == errno) {
-			fprintf(stderr, "Error: %s does not support memory mapping\n", device->name);
+            fprintf(stderr, "[Plugin Eye Raw] Error: %s does not support memory mapping\n", device->name);
 		} else {
-			fprintf(stderr, "Error requesting buffers on device: %s\n", device->name);
+            fprintf(stderr, "[Plugin Eye Raw] Error requesting buffers on device: %s\n", device->name);
 		}
 		
 		return V4L2_STATUS_ERROR;
 	}
 	
 	if (req.count < 2) {
-		fprintf(stderr, "Insufficient buffer memory on %s\n", device->name);
+        fprintf(stderr, "[Plugin Eye Raw] Insufficient buffer memory on %s\n", device->name);
 		return V4L2_STATUS_ERROR;
 	}
 	
@@ -107,7 +107,7 @@ int v4l2_open_device(v4l2_device_t* device) {
 	device->buffers = (v4l2_buffer_t*)calloc(req.count, sizeof(v4l2_buffer_t));
 	
 	if (!device->buffers) {
-		fprintf(stderr, "Out of memory");
+        fprintf(stderr, "[Plugin Eye Raw] Out of memory");
 		return V4L2_STATUS_ERROR;
 	}
 	
@@ -123,7 +123,7 @@ int v4l2_open_device(v4l2_device_t* device) {
 		buf.index = i;
 		
 		if (-1 == xioctl(device->fd, VIDIOC_QUERYBUF, &buf)) {
-			fprintf(stderr, "Unable to query buffers on %s\n", device->name);
+            fprintf(stderr, "[Plugin Eye Raw] Unable to query buffers on %s\n", device->name);
 			return V4L2_STATUS_ERROR;
 		}
 		
@@ -131,7 +131,7 @@ int v4l2_open_device(v4l2_device_t* device) {
 		device->buffers[i].start = mmap(NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, device->fd, buf.m.offset);
 		
 		if (MAP_FAILED == device->buffers[i].start) {
-			fprintf(stderr, "Unable to map buffers on %s\n", device->name);
+            fprintf(stderr, "[Plugin Eye Raw] Unable to map buffers on %s\n", device->name);
 			return V4L2_STATUS_ERROR;
 		}		
 	}
@@ -145,13 +145,13 @@ int v4l2_close_device(v4l2_device_t *device) {
     unsigned int i;
     for (i = 0; i < device->num_buffers; i++) {
 		if (-1 == munmap(device->buffers[i].start, device->buffers[i].length)) {
-			fprintf(stderr, "Unable to unmap buffers on %s\n", device->name);
+            fprintf(stderr, "[Plugin Eye Raw] Unable to unmap buffers on %s\n", device->name);
 			return V4L2_STATUS_ERROR;
 		}
 	}
 	
 	if (-1 == close(device->fd)) {
-		fprintf(stderr, "Unable to close device: %s\n", device->name);
+        fprintf(stderr, "[Plugin Eye Raw] Unable to close device: %s\n", device->name);
 		return V4L2_STATUS_ERROR;
 	}
 	
@@ -176,7 +176,7 @@ int v4l2_set_format(v4l2_device_t* device, v4l2_format_t* format) {
 	fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
 	
 	if (-1 == xioctl(device->fd, VIDIOC_S_FMT, &fmt)) {
-		fprintf(stderr, "Could not set format on device: %s\n", device->name);
+        fprintf(stderr, "[Plugin Eye Raw] Could not set format on device: %s\n", device->name);
 		return V4L2_STATUS_ERROR;
 	} else {
 		return V4L2_STATUS_OK;
@@ -189,7 +189,7 @@ int v4l2_get_format(v4l2_device_t* device, v4l2_format_t* format) {
 	fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	
 	if (-1 == xioctl(device->fd, VIDIOC_G_FMT, &fmt)) {
-		fprintf(stderr, "Could not get format on device: %s\n", device->name);
+        fprintf(stderr, "[Plugin Eye Raw] Could not get format on device: %s\n", device->name);
 		return V4L2_STATUS_ERROR;
 	}
 	
@@ -216,7 +216,7 @@ int v4l2_start_capture(v4l2_device_t *device) {
 		buf.index = i;
 		
 		if (-1 == xioctl(device->fd, VIDIOC_QBUF, &buf)) {
-			fprintf(stderr, "Unable to queue buffers on device: %s\n", device->name);
+            fprintf(stderr, "[Plugin Eye Raw] Unable to queue buffers on device: %s\n", device->name);
 			return V4L2_STATUS_ERROR;
 		}
 	}
@@ -225,7 +225,7 @@ int v4l2_start_capture(v4l2_device_t *device) {
 	
 	//turn on stream
 	if (-1 == xioctl(device->fd, VIDIOC_STREAMON, &type)) {
-		fprintf(stderr, "Unable to turn on stream on device: %s\n", device->name);
+        fprintf(stderr, "[Plugin Eye Raw] Unable to turn on stream on device: %s\n", device->name);
 		return V4L2_STATUS_ERROR;
 	}
 	
@@ -240,7 +240,7 @@ int v4l2_stop_capture(v4l2_device_t *device) {
 	enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	
 	if (-1 == xioctl(device->fd, VIDIOC_STREAMOFF, &type)) {
-		fprintf(stderr, "Unable to turn off stream on device: %s\n", device->name);
+        fprintf(stderr, "[Plugin Eye Raw] Unable to turn off stream on device: %s\n", device->name);
 		return V4L2_STATUS_ERROR;
 	}
 	
@@ -264,7 +264,7 @@ int v4l2_grab_frame(v4l2_device_t *device) {
 
 	//requeue buffer
 	if (-1 == xioctl(device->fd, VIDIOC_QBUF, &frame_buffer)) {
-		fprintf(stderr, "Could not requeue buffer on device: %s\n", device->name);
+        fprintf(stderr, "[Plugin Eye Raw] Could not requeue buffer on device: %s\n", device->name);
 		return V4L2_STATUS_ERROR;
 	}
 	

@@ -12,16 +12,18 @@
 #include <sys/ioctl.h>
 
 Raw::Raw(QObject *parent)
-    : QObject(parent)
+    : ProtoEye(parent)
     , _timer_id(0)
     , _vs(NULL)
     , _device(NULL)
     , _frame(NULL)
     , _rgb_frame(NULL)
-{}
+{
+    qDebug() << "[Plugin Eye Raw] Created without device name";
+}
 
 Raw::Raw(const QByteArray &device)
-    : QObject(NULL)
+    : ProtoEye(NULL)
     , _timer_id(0)
     , _vs(NULL)
     , _device(NULL)
@@ -36,16 +38,15 @@ Raw::Raw(const QByteArray &device)
 
     _width = _format.width;
     _height = _format.height;
+    _frame = new unsigned char[v4l2_get_buffer_size(_device)];
+    _rgb_frame = new unsigned char[_width * _height * 4]; // RGB32
 
     QString fourcc = "";
     fourcc += _format.pixel_format & 0xff;
     fourcc += (_format.pixel_format >> 8) & 0xff;
     fourcc += (_format.pixel_format >> 16) & 0xff;
     fourcc += (_format.pixel_format >> 24) & 0xff;
-    qDebug() << "Created raw eye width: " << _width << " height: " << _height << " FourCC: " << fourcc;
-
-    _frame = new unsigned char[v4l2_get_buffer_size(_device)];
-    _rgb_frame = new unsigned char[_width * _height * 4]; // RGB32
+    qDebug() << "[Plugin Eye Raw] Created eye width:" << _width << "height:" << _height << "FourCC:" << fourcc;
 }
 
 Raw::~Raw()
@@ -57,7 +58,6 @@ Raw::~Raw()
     }
     delete[] _frame;
     delete[] _rgb_frame;
-    closeSurface();
 }
 
 QAbstractVideoSurface* Raw::videoSurface() const
@@ -73,14 +73,16 @@ void Raw::setVideoSurface(QAbstractVideoSurface* surface)
 
 void Raw::closeSurface()
 {
-    if( _vs && _vs->isActive() )
+    if( _vs && _vs->isActive() ) {
+        qDebug() << "[Plugin Eye Raw] Closing surface";
         _vs->stop();
+    }
 }
 
 void Raw::start()
 {
     if ( _timer_id == 0 ) {
-        qDebug() << "Starting capture";
+        qDebug() << "[Plugin Eye Raw] Starting capture";
         closeSurface();
         _vsformat = QVideoSurfaceFormat(QSize(_width, _height), QVideoFrame::Format_RGB32);
         _vs->start(_vsformat);
@@ -92,8 +94,9 @@ void Raw::start()
 void Raw::stop()
 {
     if ( _timer_id != 0 ) {
-        qDebug() << "Stopping capture";
+        qDebug() << "[Plugin Eye Raw] Stopping capture";
         killTimer(_timer_id);
+        _timer_id = 0;
         v4l2_stop_capture(_device);
         closeSurface();
     }
@@ -108,8 +111,6 @@ void Raw::timerEvent(QTimerEvent*)
     ccvt_yuyv(_width, _height, _frame, _rgb_frame);
 
     QImage screenImage = QImage(_rgb_frame, _width, _height, QImage::Format_RGB32);
-
-    qDebug() << "Working...";
 
     _vs->present(QVideoFrame(screenImage));
     screenImage.save(QString("/sdcard/image.bmp"));
@@ -142,9 +143,9 @@ void Raw::ccvt_yuyv(int width, int height, const unsigned char *src, unsigned ch
             r = LIMIT(yy + vr);
             g = LIMIT(yy - ug - vg);
             b = LIMIT(yy + ub );
-            *dst++ = r;
-            *dst++ = g;
             *dst++ = b;
+            *dst++ = g;
+            *dst++ = r;
             *dst++ = 0;
             py += 2;
             y = *py;
@@ -198,7 +199,7 @@ QList<QUrl> Raw::sources()
                 name = entryInfo.fileName();
             else
                 name = QString((const char*)vcap.card);
-            qDebug() << "found camera: " << name;
+            qDebug() << "[Plugin Eye Raw] Found camera: " << name;
 
             out.append(QUrl(entryInfo.filePath().toLocal8Bit()));
             out.last().setScheme("raw");
@@ -207,5 +208,10 @@ QList<QUrl> Raw::sources()
     }
 
     return out;
+}
+
+bool Raw::isSupported(QUrl url)
+{
+    return this->sources().contains(url);
 }
 

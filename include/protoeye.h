@@ -8,13 +8,17 @@
 #include "protoplugin.h"
 
 class ProtoEye
-    : public ProtoPlugin
+    : public QObject
+    , public ProtoPlugin
 {
-public:
-    virtual ~ProtoEye() {}
+    Q_OBJECT
+    Q_INTERFACES(ProtoPlugin)
 
-    // Register types in QML
-    virtual void registerQmlType() = 0;
+    Q_PROPERTY( QAbstractVideoSurface* videoSurface READ videoSurface WRITE setVideoSurface )
+
+public:
+    explicit ProtoEye(QObject *parent = 0) : QObject(parent) {}
+    virtual ~ProtoEye() {}
 
     // Get list of found & supported sources or empty list
     virtual QList<QUrl> sources() = 0;
@@ -22,8 +26,12 @@ public:
     // Get list of supported schemes
     virtual QStringList schemes() = 0;
 
+    // Check url supporting by plugin
+    virtual bool isSupported(QUrl url) = 0;
+
     // Interface for VideoOutput
     virtual QAbstractVideoSurface* videoSurface() const = 0;
+    virtual void setVideoSurface(QAbstractVideoSurface* surface) = 0;
 
     // Create new instance with url to use it as video source
     virtual ProtoEye* instance(QUrl url) = 0;

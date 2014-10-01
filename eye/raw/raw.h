@@ -10,20 +10,17 @@ extern "C" {
 }
 
 class Raw
-    : public QObject
-    , public ProtoEye
+    : public ProtoEye
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ProtoEye_iid FILE "plugin.json")
     Q_INTERFACES(ProtoEye)
 
-    Q_PROPERTY( QAbstractVideoSurface* videoSurface READ videoSurface WRITE setVideoSurface )
-
 public:
-    void registerQmlType() { qmlRegisterType<Raw>(ProtoEye_iid, 1, 0, PLUGIN_NAME ); }
-
     QList<QUrl> sources();
     QStringList schemes() { return QStringList("raw"); }
+
+    bool isSupported(QUrl url);
 
     Raw(QObject *parent = 0); // Only for QML type
     Raw(const QByteArray& device);

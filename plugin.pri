@@ -18,14 +18,10 @@ CONFIG       += plugin
 #  qml - required by qmlRegisterType
 QT           += qml
 
+include(include.pri)
+
 # Name of plugin in format "libplugin-<type>-<name>"
 TARGET        = $$qtLibraryTarget(plugin-$${PLUGIN_TYPE}-$${PLUGIN_NAME})
 
 # Copy target to plugins directory
 QMAKE_POST_LINK = cp -lf "lib$${TARGET}.so" ../../
-
-# Interfaces include
-INCLUDEPATH  += $$PWD/include
-
-# Plugin interfaces
-HEADERS += $$PWD/include/*.h
