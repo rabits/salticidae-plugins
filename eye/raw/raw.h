@@ -3,8 +3,6 @@
 
 #include <protoeye.h>
 
-#include <QVideoSurfaceFormat>
-
 extern "C" {
     #include "v4l2.h"
 }
@@ -26,8 +24,7 @@ public:
     Raw(const QByteArray& device);
     ~Raw();
 
-    QAbstractVideoSurface* videoSurface() const;
-    void setVideoSurface(QAbstractVideoSurface* surface);
+    QSize size();
 
     ProtoEye* instance(QUrl url) {
         return new Raw(url.path().toLocal8Bit());
@@ -45,8 +42,7 @@ private:
 
     int _timer_id;
 
-    QAbstractVideoSurface* _vs;
-    QVideoSurfaceFormat    _vsformat;
+    QImage _image;
 
     v4l2_device_t* _device;
 

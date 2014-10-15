@@ -3,7 +3,7 @@
 
 #include <QList>
 #include <QtQml>
-#include <QAbstractVideoSurface>
+#include <QImage>
 
 #include "protoplugin.h"
 
@@ -13,8 +13,6 @@ class ProtoEye
 {
     Q_OBJECT
     Q_INTERFACES(ProtoPlugin)
-
-    Q_PROPERTY( QAbstractVideoSurface* videoSurface READ videoSurface WRITE setVideoSurface )
 
 public:
     explicit ProtoEye(QObject *parent = 0) : QObject(parent) {}
@@ -29,12 +27,19 @@ public:
     // Check url supporting by plugin
     virtual bool isSupported(QUrl url) = 0;
 
-    // Interface for VideoOutput
-    virtual QAbstractVideoSurface* videoSurface() const = 0;
-    virtual void setVideoSurface(QAbstractVideoSurface* surface) = 0;
+    // Get size of picture
+    virtual QSize size() = 0;
 
     // Create new instance with url to use it as video source
     virtual ProtoEye* instance(QUrl url) = 0;
+
+signals:
+    // Interface for the EyeDisplay object
+    void present(QImage*);
+
+public slots:
+    virtual void start() = 0;
+    virtual void stop() = 0;
 };
 
 #define ProtoEye_iid "org.rabits.salticidae.plugins.eye"

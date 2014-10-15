@@ -14,7 +14,6 @@
 Raw::Raw(QObject *parent)
     : ProtoEye(parent)
     , _timer_id(0)
-    , _vs(NULL)
     , _device(NULL)
     , _frame(NULL)
     , _rgb_frame(NULL)
@@ -25,7 +24,6 @@ Raw::Raw(QObject *parent)
 Raw::Raw(const QByteArray &device)
     : ProtoEye(NULL)
     , _timer_id(0)
-    , _vs(NULL)
     , _device(NULL)
     , _frame(NULL)
     , _rgb_frame(NULL)
@@ -60,32 +58,15 @@ Raw::~Raw()
     delete[] _rgb_frame;
 }
 
-QAbstractVideoSurface* Raw::videoSurface() const
+QSize Raw::size()
 {
-    return _vs;
-}
-
-void Raw::setVideoSurface(QAbstractVideoSurface* surface)
-{
-    closeSurface();
-    _vs = surface;
-}
-
-void Raw::closeSurface()
-{
-    if( _vs && _vs->isActive() ) {
-        qDebug() << "[Plugin Eye Raw] Closing surface";
-        _vs->stop();
-    }
+    return QSize(_width, _height);
 }
 
 void Raw::start()
 {
-    if ( _timer_id == 0 ) {
+    if ( receivers(SIGNAL(present(QImage*))) > 0 && _timer_id == 0 ) {
         qDebug() << "[Plugin Eye Raw] Starting capture";
-        closeSurface();
-        _vsformat = QVideoSurfaceFormat(QSize(_width, _height), QVideoFrame::Format_RGB32);
-        _vs->start(_vsformat);
         v4l2_start_capture(_device);
         _timer_id = startTimer(0);
     }
@@ -93,27 +74,22 @@ void Raw::start()
 
 void Raw::stop()
 {
-    if ( _timer_id != 0 ) {
+    if ( receivers(SIGNAL(present(QImage*))) == 0 && _timer_id != 0 ) {
         qDebug() << "[Plugin Eye Raw] Stopping capture";
         killTimer(_timer_id);
         _timer_id = 0;
         v4l2_stop_capture(_device);
-        closeSurface();
     }
 }
 
 void Raw::timerEvent(QTimerEvent*)
 {
-    if( ! _vs )
-        return;
     v4l2_grab_frame(_device);
     v4l2_copy_frame(_device, _frame);
     ccvt_yuyv(_width, _height, _frame, _rgb_frame);
 
-    QImage screenImage = QImage(_rgb_frame, _width, _height, QImage::Format_RGB32);
-
-    _vs->present(QVideoFrame(screenImage));
-    screenImage.save(QString("/sdcard/image.bmp"));
+    _image = QImage(_rgb_frame, _width, _height, QImage::Format_RGB32);
+    emit present(&_image);
 }
 
 void Raw::ccvt_yuyv(int width, int height, const unsigned char *src, unsigned char *dst)
@@ -174,22 +150,27 @@ QList<QUrl> Raw::sources()
     QFileInfoList entries = devDir.entryInfoList(QStringList() << "video*");
 
     foreach (const QFileInfo &entryInfo, entries) {
+        qDebug() << "[Plugin Eye Raw] Checking video device:" << entryInfo.filePath();
+        if( ! (entryInfo.isWritable() && entryInfo.isReadable()) ) {
+            qDebug() << "[Plugin Eye Raw]   trying to get access";
+            QProcess::execute("su", QStringList() << "-c" << QString("chmod 666 ").append(entryInfo.filePath()));
+        }
         int fd = ::open(entryInfo.filePath().toLatin1().constData(), O_RDWR );
-        if (fd == -1)
+        if( fd == -1 )
             continue;
 
         bool isCamera = false;
 
         v4l2_input input;
         memset(&input, 0, sizeof(input));
-        for (; ::ioctl(fd, VIDIOC_ENUMINPUT, &input) >= 0; ++input.index) {
+        for( ; ::ioctl(fd, VIDIOC_ENUMINPUT, &input) >= 0; ++input.index ) {
             if (input.type == V4L2_INPUT_TYPE_CAMERA || input.type == 0) {
                 isCamera = ::ioctl(fd, VIDIOC_S_INPUT, input.index) != 0;
                 break;
             }
         }
 
-        if (isCamera) {
+        if( isCamera ) {
             // find out its driver "name"
             QString name;
             struct v4l2_capability vcap;
@@ -199,7 +180,7 @@ QList<QUrl> Raw::sources()
                 name = entryInfo.fileName();
             else
                 name = QString((const char*)vcap.card);
-            qDebug() << "[Plugin Eye Raw] Found camera: " << name;
+            qDebug() << "[Plugin Eye Raw]   camera added";
 
             out.append(QUrl(entryInfo.filePath().toLocal8Bit()));
             out.last().setScheme("raw");
