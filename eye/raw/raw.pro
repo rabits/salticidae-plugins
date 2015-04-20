@@ -1,5 +1,5 @@
 # Version
-PLUGIN_VERSION = '1.0'
+PLUGIN_VERSION = '1.1'
 
 # Include basic plugin defines
 include(../../plugin.pri)

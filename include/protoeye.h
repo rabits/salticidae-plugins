@@ -35,7 +35,7 @@ public:
 
 signals:
     // Interface for the EyeDisplay object
-    void present(QImage*);
+    void present(QImage);
 
 public slots:
     virtual void start() = 0;

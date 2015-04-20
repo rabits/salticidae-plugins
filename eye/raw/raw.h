@@ -42,15 +42,12 @@ private:
 
     int _timer_id;
 
-    QImage _image;
-
     v4l2_device_t* _device;
 
     int _width, _height;
+    unsigned int _pixel_format;
     unsigned char *_frame;
     unsigned char *_rgb_frame;
-
-    void ccvt_yuyv(int width, int height, const unsigned char *src, unsigned char *dst);
 };
 
 #endif // RAW_H

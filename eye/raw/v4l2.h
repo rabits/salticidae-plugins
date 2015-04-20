@@ -2,6 +2,7 @@
 #define _V4L2_H
 
 #include <stdlib.h>
+#include <sys/time.h> // Workaround for "linux/videodev2.h:270: error: field 'timestamp' has incomplete type"
 #include <linux/videodev2.h>
 
 #define V4L2_STATUS_OK 1
@@ -40,8 +41,11 @@ int v4l2_get_format(v4l2_device_t* device, v4l2_format_t* format);
 int v4l2_start_capture(v4l2_device_t *device);
 int v4l2_stop_capture(v4l2_device_t *device);
 
-int v4l2_grab_frame(v4l2_device_t *device);
+int v4l2_grab_frame(v4l2_device_t *device, unsigned int format);
 
 void v4l2_copy_frame(v4l2_device_t *device, unsigned char* dest);
+
+int memcpy_mjpg(unsigned char *out, unsigned char *buf, int size);
+void ccvt_yuyv(int width, int height, const unsigned char *src, unsigned char *dst);
 
 #endif
