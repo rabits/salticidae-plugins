@@ -1,5 +1,5 @@
-#ifndef PROTOEYE_H
-#define PROTOEYE_H
+#ifndef PROTOVIDEO_H
+#define PROTOVIDEO_H
 
 #include <QList>
 #include <QtQml>
@@ -7,7 +7,7 @@
 
 #include "protoplugin.h"
 
-class ProtoEye
+class ProtoVideo
     : public QObject
     , public ProtoPlugin
 {
@@ -15,8 +15,8 @@ class ProtoEye
     Q_INTERFACES(ProtoPlugin)
 
 public:
-    explicit ProtoEye(QObject *parent = 0) : QObject(parent) {}
-    virtual ~ProtoEye() {}
+    explicit ProtoVideo(QObject *parent = 0) : QObject(parent) {}
+    virtual ~ProtoVideo() {}
 
     // Get list of found & supported sources or empty list
     virtual QList<QUrl> sources() = 0;
@@ -31,7 +31,7 @@ public:
     virtual QSize size() = 0;
 
     // Create new instance with url to use it as video source
-    virtual ProtoEye* instance(QUrl url) = 0;
+    virtual ProtoVideo* instance(QUrl url) = 0;
 
 signals:
     // Interface for the EyeDisplay object
@@ -42,8 +42,8 @@ public slots:
     virtual void stop() = 0;
 };
 
-#define ProtoEye_iid "org.rabits.salticidae.plugins.eye"
+#define ProtoVideo_iid "org.rabits.salticidae.plugins.video"
 
-Q_DECLARE_INTERFACE(ProtoEye, ProtoEye_iid)
+Q_DECLARE_INTERFACE(ProtoVideo, ProtoVideo_iid)
 
-#endif // PROTOEYE_H
+#endif // PROTOVIDEO_H

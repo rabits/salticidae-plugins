@@ -2,6 +2,7 @@
 #define PROTOPLUGIN_H
 
 #include <QUrl>
+#include <QSettings>
 
 #ifndef PLUGIN_VERSION
 #  define PLUGIN_VERSION "undefined plugin version"
@@ -12,18 +13,21 @@
 #ifndef PLUGIN_TYPE
 #  define PLUGIN_TYPE "undefined plugin type"
 #endif
+#ifndef PLUGIN_DESCRIPTION
+#  define PLUGIN_DESCRIPTION "undefined plugin description"
+#endif
 
 class ProtoPlugin
 {
 public:
     virtual ~ProtoPlugin() {}
 
-    // Plugin version, name and type should be predefined in plugin project file
-    virtual QString version() { return PLUGIN_VERSION; }
-    virtual QString name()    { return PLUGIN_NAME; }
-    virtual QString type()    { return PLUGIN_TYPE; }
+    virtual QString name()        { return PLUGIN_NAME; }
+    virtual QString type()        { return PLUGIN_TYPE; }
 
-    virtual ProtoPlugin* instance(QUrl url) = 0;
+    // Plugin version and description you can define in the plugin project file
+    virtual QString version()     { return PLUGIN_VERSION; }
+    virtual QString description() { return PLUGIN_DESCRIPTION; }
 };
 
 #define ProtoPlugin_iid "org.rabits.salticidae.plugins"

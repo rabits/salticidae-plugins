@@ -20,8 +20,8 @@ QT           += qml
 
 include(include.pri)
 
-# Name of plugin in format "libplugin-<type>-<name>"
-TARGET        = $$qtLibraryTarget(plugin-$${PLUGIN_TYPE}-$${PLUGIN_NAME})
+# Name of plugin in format "libsalticidae-plugin-<type>-<name>"
+TARGET        = $$qtLibraryTarget(salticidae-plugin-$${PLUGIN_TYPE}-$${PLUGIN_NAME})
 
 # Copy target to plugins directory
 QMAKE_POST_LINK = cp -lf "lib$${TARGET}.so" ../../

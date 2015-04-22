@@ -1,18 +1,18 @@
 #ifndef RAW_H
 #define RAW_H
 
-#include <protoeye.h>
+#include <protovideo.h>
 
 extern "C" {
     #include "v4l2.h"
 }
 
 class Raw
-    : public ProtoEye
+    : public ProtoVideo
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID ProtoEye_iid FILE "plugin.json")
-    Q_INTERFACES(ProtoEye)
+    Q_PLUGIN_METADATA(IID ProtoVideo_iid FILE "../../plugin.json")
+    Q_INTERFACES(ProtoVideo)
 
 public:
     QList<QUrl> sources();
@@ -26,7 +26,7 @@ public:
 
     QSize size();
 
-    ProtoEye* instance(QUrl url) {
+    ProtoVideo* instance(QUrl url) {
         return new Raw(url.path().toLocal8Bit());
     }
 

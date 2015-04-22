@@ -2,10 +2,13 @@ Salticidae plugins
 ==================
 This repo contains plugins for the [Salticidae](https://github.com/rabits/salticidae) project
 
-Eye
----
+Video
+-----
 
-Eye plugins can provide new video source
+Video plugins can provide new video source
+
+### Dummy
+Displays test video table with current datetime. URL format is "dummy:///{width}x{height}x{fps}" - by default is 640x480x30.
 
 ### Raw
 Can work with USB UVC & V4L2 devices under Linux & Android
