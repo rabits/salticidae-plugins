@@ -16,6 +16,9 @@ QList<QUrl> Dummy::sources()
 
 bool Dummy::isSupported(QUrl url)
 {
+    if( url.scheme() != "dummy" )
+        return false;
+
     QStringList parts = url.path().mid(1).split('x');
     qDebug() << "[Plugin Video Dummy] Checking parameters" << parts;
     bool out = true;
@@ -60,7 +63,6 @@ Dummy::Dummy(const QString &size_fps)
     qDebug() << "[Plugin Video Dummy] Creating plugin";
     QStringList parts = size_fps.split('x');
 
-    qDebug() << parts;
     if( parts[0].length() > 0 )
         _width = parts[0].toUInt();
     if( parts.length() > 1 )
@@ -93,7 +95,7 @@ QSize Dummy::size()
 void Dummy::start()
 {
     if ( receivers(SIGNAL(present(QImage))) > 0 && _timer_id == 0 ) {
-        qDebug() << "[Plugin Video Dummy] Starting table generation" << 1000 / _framerate;
+        qDebug() << "[Plugin Video Dummy] Starting table generation";
         _timer_id = startTimer(1000 / _framerate);
     }
 }
@@ -113,7 +115,10 @@ void Dummy::timerEvent(QTimerEvent*)
     img.detach();
 
     QPainter painter(&img);
-    painter.drawText(_width/2, _height/15, QDateTime::currentDateTime().toString("yy/MM/dd hh:mm:ss.zzz"));
+    QFont font;
+    font.setPixelSize(_height/25);
+    painter.setFont(font);
+    painter.drawText(_width/2, _height/14, QDateTime::currentDateTime().toString("yy/MM/dd hh:mm:ss.zzz"));
 
     emit present(img);
 }
